@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NGL Spam Tool - Twice</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg:#000000; --card:#1a1a1a;
+            --text:#ffffff; --muted:#888888;
+            --primary:#ff0000; --secondary:#AD4AE7;
+            --accent:#666666;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background:radial-gradient(circle at 20% 20%,rgba(255,255,255,.1),transparent 30%),
+                       radial-gradient(circle at 80% 10%,rgba(255,255,255,.08),transparent 25%),
+                       radial-gradient(circle at 50% 90%,rgba(255,255,255,.05),transparent 30%),
+                       var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Menu Toggle Button */
+        .menu-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text);
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1001;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+        }
+        
+        .menu-toggle:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.05);
+        }
+        
+        .menu-toggle i {
+            font-size: 20px;
+        }
+
+        /* Sidebar */
+        .sidebar{
+            width: 270px;
+            background: rgba(26,26,26,0.95);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid rgba(255,255,255,0.15);
+            padding: 25px 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar.active {
+            transform: translateX(0);
+        }
+        
+        /* Overlay ketika sidebar aktif */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 999;
+            display: none;
+            backdrop-filter: blur(3px);
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* Sidebar Header */
+        .sidebar-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                #ffffff 0%, 
+                #ff0000 30%, 
+                #AD4AE7 60%, 
+                #ffffff 100%
+            );
+            animation: rotate 3s linear infinite;
+            padding: 4px;
+        }
+
+        .logo {
+            width: 92px;
+            height: 92px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            z-index: 1;
+            position: relative;
+            background: #1a1a1a;
+            border: 2px solid rgba(255,255,255,0.1);
+            background-image: url('https://files.catbox.moe/t5fw19.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .logo.failed::after {
+            content: "IC";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            background: #1a1a1a;
+            border-radius: 50%;
+            opacity: 1;
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .app-title {
+            font-family:'Orbitron',sans-serif;
+            font-size: 22px;
+            font-weight:800;
+            color:#fff;
+            text-align:center;
+            text-shadow:0 0 12px rgba(255,255,255,0.5);
+            margin-bottom: 8px;
+        }
+        
+        .access-info{
+            font-size: 12px;
+            text-align:center;
+            color:#fff;
+            background:rgba(255,255,255,0.1);
+            padding: 8px 14px;
+            border-radius:10px;
+            margin-top: 5px;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .access-info::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, 
+                #ffffff 0%, 
+                #ff0000 30%, 
+                #AD4AE7 60%, 
+                #ffffff 100%);
+            border-radius: 12px;
+            z-index: -1;
+            animation: borderGlow 3s linear infinite;
+            background-size: 400% 400%;
+        }
+        
+        @keyframes borderGlow {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        .nav-menu{
+            list-style:none;
+            margin-top:25px;
+        }
+        
+        .nav-item {
+            margin-bottom: 8px;
+        }
+        
+        .nav-link{
+            display:flex;
+            align-items:center;
+            gap:12px;
+            padding:14px 16px;
+            color:var(--text);
+            text-decoration:none;
+            border-radius:12px;
+            font-size:14px;
+            transition:.3s;
+            font-weight:500;
+        }
+        
+        .nav-link:hover,
+        .nav-link.active{
+            background:linear-gradient(90deg,rgba(255,255,255,0.15),rgba(255,255,255,0.08));
+            border-left:4px solid var(--secondary);
+            transform:translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        /* Main Content */
+        .main-content{
+            flex:1;
+            padding: 20px 35px 35px;
+            transition: margin-left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .main-logo-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .main-logo-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                #ffffff 0%, 
+                #ff0000 30%, 
+                #AD4AE7 60%, 
+                #ffffff 100%
+            );
+            animation: rotate 3s linear infinite;
+            padding: 4px;
+        }
+        
+        .main-logo {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            z-index: 1;
+            position: relative;
+            background: #1a1a1a;
+            border: 2px solid rgba(255,255,255,0.1);
+            background-image: url('https://files.catbox.moe/t5fw19.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .main-app-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 0 12px rgba(255,255,255,0.5);
+        }
+        
+        .main-access-info {
+            font-size: 12px;
+            text-align: center;
+            color: #fff;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 14px;
+            border-radius: 10px;
+            margin-top: 5px;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .main-access-info::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, 
+                #ffffff 0%, 
+                #ff0000 30%, 
+                #AD4AE7 60%, 
+                #ffffff 100%);
+            border-radius: 12px;
+            z-index: -1;
+            animation: borderGlow 3s linear infinite;
+            background-size: 400% 400%;
+        }
+        
+        /* User Stats Card */
+        .user-stats-card {
+            width: 100%;
+            max-width: 450px;
+            margin-bottom: 35px;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+        
+        .stats-card {
+            border-radius: 18px;
+            overflow: hidden;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.12));
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            position: relative;
+            padding: 0;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        .stats-card .header-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 15px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            border-bottom: 4px solid rgba(255,255,255,0.02);
+        }
+        
+        .stats-card .header-icon h3 {
+            margin: 0;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            letter-spacing: 0.6px;
+            color: #fff;
+            text-align: center;
+        }
+        
+        .user-icon {
+            position: relative;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+        
+        .user-icon .fa-user-group {
+            font-size: 24px;
+            color: #fff;
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.3));
+        }
+        
+        .stats-card .body {
+            padding: 15px;
+            background: linear-gradient(180deg, rgba(255,0,0,0.2) 0%, rgba(173,74,231,0.2) 100%);
+            position: relative;
+        }
+        
+        .user-info-compact {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            font-family: 'Poppins', monospace;
+            font-size: 14px;
+            position: relative;
+        }
+        
+        .info-row {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            position: relative;
+        }
+        
+        .info-label {
+            flex: 0 0 90px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .info-separator {
+            margin: 0 8px;
+            color: rgba(255,255,255,0.5);
+            z-index: 2;
+        }
+        
+        .info-value {
+            flex: 1;
+            font-family: 'Orbitron', sans-serif;
+            color: #e6e6e6;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .vertical-line {
+            position: absolute;
+            left: 97px;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: rgba(255,255,255,0.3);
+            z-index: 1;
+        }
+        
+        .horizontal-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(255,255,255,0.3);
+            z-index: 1;
+        }
+        
+        .horizontal-line.top {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        /* Container untuk form NGL */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 18px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 18px 18px 0 0;
+        }
+        
+        .header-section {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+        }
+        
+        .header-section h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+        }
+        
+        .header-section p {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        /* Limit Info Box */
+        .limit-info {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .limit-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            border-radius: 12px 12px 0 0;
+        }
+
+        .limit-header {
+            text-align: center;
+            margin-bottom: 15px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            color: #fff;
+        }
+
+        .limit-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .limit-label {
+            color: #bbb;
+            font-weight: 500;
+        }
+
+        .limit-value {
+            color: var(--muted);
+            font-weight: bold;
+        }
+
+        .limit-value.warning {
+            color: #FF9800;
+        }
+
+        .limit-value.danger {
+            color: var(--primary);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 15px rgba(173, 74, 231, 0.4);
+            background: rgba(255, 255, 255, 0.12);
+        }
+        
+        /* Action Button */
+        .action-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 16px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.6s;
+        }
+        
+        .action-btn:hover::before {
+            left: 100%;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(255,255,255,0.15),
+                        0 0 30px rgba(255,255,255,0.1),
+                        inset 0 0 0 1px rgba(255,255,255,0.2);
+        }
+        
+        .action-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .logs {
+            background: rgba(0,0,0,0.7);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 25px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+        }
+        
+        .logs::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .log-success { color: #00ff00; }
+        .log-error { color: #ff4444; }
+        .log-info { color: #ffffff; }
+        .log-warning { color: #FF9800; }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 6px;
+        }
+        
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            margin-top: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 14px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+        }
+        
+        /* Quick Stats */
+        .quick-stats {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 18px;
+            padding: 25px;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .quick-stats::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 18px 18px 0 0;
+        }
+        
+        .quick-stats h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: #fff;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 20px;
+            text-shadow: 0 0 15px rgba(255,255,255,0.3);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 18px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-5px);
+        }
+        
+        .stat-card .stat-label {
+            font-size: 12px;
+            color: #bbb;
+            margin-bottom: 8px;
+        }
+        
+        .stat-card .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .stat-card .stat-progress {
+            background: rgba(0,0,0,0.3);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .stat-card .stat-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+        }
+        
+        /* Guide Button */
+        .guide-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .guide-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255,68,68,0.4);
+        }
+        
+        /* Welcome Modal */
+        .welcome-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: var(--card);
+            padding: 40px;
+            border-radius: 18px;
+            max-width: 600px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 10px 50px rgba(255,68,68,0.5);
+            animation: slideIn 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 18px 18px 0 0;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .modal-content h2 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .modal-tips {
+            background: rgba(42,42,42,0.8);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .modal-tips h3 {
+            color: var(--secondary);
+            margin-bottom: 15px;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .modal-tips ul {
+            line-height: 1.8;
+            padding-left: 20px;
+        }
+        
+        .modal-tips li {
+            margin-bottom: 8px;
+        }
+        
+        .modal-info {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (min-width: 1024px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 270px;
+            }
+            .menu-toggle {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 1023px) {
+            .main-content {
+                margin-left: 0;
+                padding: 15px 20px 35px;
+            }
+            .main-app-title {
+                font-size: 24px;
+            }
+            .container {
+                padding: 20px;
+            }
+            .modal-content {
+                padding: 30px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .stat-item {
+                text-align: left;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .modal-content {
+                padding: 20px;
+            }
+            .user-stats-card {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu Toggle Button -->
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <div class="logo-ring"></div>
+                <div class="logo" id="sidebarLogo"></div>
+            </div>
+            <div class="app-title">Twice</div>
+            <div class="access-info"><b><i>NGL Tools</i></b></div>
+        </div>
+        
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-tachometer-alt"></i>Dashboard</a></li>
+            <li class="nav-item"><a href="/profile" class="nav-link"><i class="fas fa-user"></i>Profile</a></li>
+            <li class="nav-item"><a href="https://te.me/sennmods1" class="nav-link"><i class="fab fa-telegram"></i>Telegram</a></li>
+            <li class="nav-item"><a href="https://wa.me/6282189275004" class="nav-link"><i class="fab fa-whatsapp"></i>WhatsApp</a></li>
+            <li class="nav-item"><a href="/chat-ai" class="nav-link"><i class="fas fa-robot"></i>Chat AI</a></li>
+            <li class="nav-item"><a href="/execution" class="nav-link"><i class="fas fa-bug"></i>Execution</a></li>
+            <li class="nav-item"><a href="/qr-generator" class="nav-link"><i class="fas fa-qrcode"></i>QR Generator</a></li>
+            <li class="nav-item"><a href="/tiktok" class="nav-link"><i class="fab fa-tiktok"></i>TikTok Downloader</a></li>
+            <li class="nav-item"><a href="/quoteip" class="nav-link"><i class="fas fa-mobile-alt"></i>iPhone Quote</a></li>
+            <li class="nav-item"><a href="/ngl-spam/guide" class="nav-link active"><i class="fas fa-message"></i>Spam NGL</a></li>
+            <li class="nav-item"><a href="/logout" class="nav-link"><i class="fas fa-sign-out-alt"></i>Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <div class="main-logo-container">
+                <div class="main-logo-ring"></div>
+                <div class="main-logo" id="mainLogo"></div>
+            </div>
+            <div>
+                <div class="main-app-title">Twice</div>
+                <div class="main-access-info"><b>NGL Spam Tool</b></div>
+            </div>
+        </div>
+
+        <!-- User Stats Card -->
+        <div class="user-stats-card">
+            <div class="stats-card">
+                <div class="header-icon">
+                    <div class="user-icon">
+                        <i class="fa-solid fa-user-group"></i>
+                    </div>
+                    <h3>User Information</h3>
+                </div>
+
+                <div class="body">
+                    <div class="user-info-compact">
+                        <div class="vertical-line"></div>
+                        <div class="horizontal-line top"></div>
+
+                        <div class="info-row">
+                            <div class="info-label">Username</div>
+                            <div class="info-separator"></div>
+                            <div class="info-value" id="usernameDisplay">Loading...</div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-label">Expired</div>
+                            <div class="info-separator"></div>
+                            <div class="info-value" id="expiredDisplay">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Welcome Modal -->
+        <div class="welcome-modal" id="welcomeModal">
+            <div class="modal-content">
+                <h2><i class="fas fa-star"></i> Selamat Datang di NGL Spam Tool!</h2>
+                
+                <div class="modal-tips">
+                    <h3><i class="fas fa-lightbulb"></i> Tips Penting:</h3>
+                    <ul>
+                        <li>✅ Maksimal <strong>100 pesan per request</strong></li>
+                        <li>✅ Limit harian <strong>200 pesan</strong></li>
+                        <li>✅ Delay otomatis <strong>3-8 detik</strong></li>
+                        <li>✅ Reset setiap <strong>midnight (00:00 WIB)</strong></li>
+                        <li>⚠️ Jangan tutup halaman saat proses berjalan</li>
+                        <li>⚠️ Gunakan dengan bijak dan bertanggung jawab</li>
+                    </ul>
+                </div>
+
+                <div class="modal-info">
+                    <p style="margin: 0;">
+                        <i class="fas fa-book-open"></i> 
+                        <strong>Butuh bantuan lebih?</strong> 
+                        <a href="/ngl-spam/guide" style="color: var(--secondary); text-decoration: underline;">
+                            Baca panduan lengkap disini
+                        </a>
+                    </p>
+                </div>
+
+                <div style="text-align: center; margin-top: 25px;">
+                    <button onclick="closeWelcomeModal()" class="action-btn">
+                        <i class="fas fa-check"></i> Mengerti, Mulai Sekarang!
+                    </button>
+                </div>
+
+                <div style="text-align: center; margin-top: 15px;">
+                    <label style="color: #888; cursor: pointer;">
+                        <input type="checkbox" id="dontShowAgain" style="margin-right: 8px;">
+                        Jangan tampilkan lagi
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="header-section">
+                <h2><i class="fas fa-message"></i> NGL Spam Tool</h2>
+                <p>Tool untuk mengirim pesan ke NGL.link</p>
+            </div>
+            
+            <div style="text-align: center; margin-bottom: 20px;">
+                <a href="/ngl-spam/guide" class="guide-btn">
+                    <i class="fas fa-book-open"></i> Lihat Panduan Lengkap
+                </a>
+            </div>
+
+            <!-- Limit Info Box -->
+            <div class="limit-info">
+                <div class="limit-header">
+                    <i class="fas fa-shield-alt"></i> Limit Harian Kamu
+                </div>
+                <div class="limit-row">
+                    <span class="limit-label">Digunakan Hari Ini:</span>
+                    <span class="limit-value" id="usageToday">0 / 200 pesan</span>
+                </div>
+                <div class="limit-row">
+                    <span class="limit-label">Sisa Limit:</span>
+                    <span class="limit-value" id="remainingLimit">200 pesan</span>
+                </div>
+                <div class="limit-row">
+                    <span class="limit-label">Reset:</span>
+                    <span class="limit-value">Midnight (00:00 WIB)</span>
+                </div>
+                <div class="limit-row">
+                    <span class="limit-label">Max Per Request:</span>
+                    <span class="limit-value">100 pesan</span>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <h3><i class="fas fa-chart-pie"></i> Statistik Penggunaan</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label"><i class="fas fa-user-plus"></i> User Limit</div>
+                        <div class="stat-number">200</div>
+                        <div class="stat-label">limit per user</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-label"><i class="fas fa-user"></i> Penggunaan Kamu</div>
+                        <div class="stat-number" id="usageStat">0<span style="font-size: 14px; color: #888;">/200</span></div>
+                        <div class="stat-progress">
+                            <div class="stat-progress-fill" id="usageProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-label"><i class="fas fa-check-circle"></i> Sisa Limit</div>
+                        <div class="stat-number" id="remainingStat">200</div>
+                        <div class="stat-label">pesan tersisa hari ini</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label"><i class="fas fa-clock"></i> Reset Dalam</div>
+                        <div class="stat-number" id="resetTimer">--:--:--</div>
+                        <div class="stat-label">(Midnight WIB)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="nglForm">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Username Target NGL:</label>
+                    <input type="text" id="target" placeholder="contoh: username123 (tanpa @)" required>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-message"></i> Pesan:</label>
+                    <textarea id="message" rows="3" placeholder="Masukkan pesan yang ingin dikirim..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-chart-bar"></i> Jumlah Pesan:</label>
+                    <input type="number" id="count" value="10" min="1" max="100" required>
+                    <small style="color: #888;">Maksimal 100 pesan per request | Sisa limit kamu: <span id="remainingCount">200</span></small>
+                </div>
+                
+                <button type="submit" id="submitBtn" class="action-btn">
+                    <i class="fas fa-rocket"></i> Mulai Spam
+                </button>
+                <div id="limitWarning" style="display: none; color: #f44336; text-align: center; margin-top: 10px;">
+                    ⚠️ Limit harian kamu sudah habis. Reset di midnight.
+                </div>
+            </form>
+            
+            <div class="stats" id="stats" style="display: none;">
+                <div class="stat-item">
+                    <div class="stat-value" id="successCount">0</div>
+                    <div style="color: #00ff00;">Sukses</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="errorCount">0</div>
+                    <div style="color: #ff4444;">Gagal</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="progress">0%</div>
+                    <div style="color: #ffffff;">Progress</div>
+                </div>
+            </div>
+            
+            <div class="progress-bar" id="progressBar" style="display: none;">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div class="logs" id="logs">
+                <div class="log-info">⏳ Menunggu perintah...</div>
+            </div>
+            
+            <a href="/dashboard" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Kembali ke Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script>
+    // Data user (akan diisi oleh server)
+    let userData = {
+        username: "Loading...",
+        expired: "Loading...",
+        usageToday: 0,
+        maxDailyLimit: 200
+    };
+
+    // Menu toggle functionality
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    function toggleSidebar() {
+        sidebar.classList.toggle('active');
+        sidebarOverlay.classList.toggle('active');
+    }
+    
+    menuToggle.addEventListener('click', toggleSidebar);
+    sidebarOverlay.addEventListener('click', toggleSidebar);
+    
+    // Load user data - UPDATE INI
+    async function loadUserData() {
+        try {
+            // Data dari server sudah di-inject via template
+            userData.username = '${username}' || 'User123';
+            userData.expired = '${formattedExp}' || '2024-12-31';
+            userData.usageToday = ${userUsageToday} || 0;
+            userData.maxDailyLimit = 200;
+
+            document.getElementById('usernameDisplay').textContent = userData.username;
+            document.getElementById('expiredDisplay').textContent = userData.expired;
+            
+            // Update usage stats
+            await updateUsageStats();
+            
+        } catch (error) {
+            console.error('Gagal memuat data user:', error);
+        }
+    }
+    
+    // Update usage statistics - UPDATE INI
+    async function updateUsageStats() {
+        try {
+            // Ambil data statistik terbaru dari API
+            const response = await fetch('/api/ngl-stats');
+            const data = await response.json();
+            
+            const userStats = data.userStats;
+            const userUsageToday = userStats.todayUsage;
+            const maxDailyLimit = userStats.dailyLimit;
+            const remaining = userStats.remaining;
+            const usagePercentage = (userUsageToday / maxDailyLimit) * 100;
+            
+            // Update tampilan
+            document.getElementById('usageToday').textContent = `${userUsageToday} / ${maxDailyLimit} pesan`;
+            document.getElementById('remainingLimit').textContent = `${remaining} pesan`;
+            document.getElementById('usageStat').innerHTML = `${userUsageToday}<span style="font-size: 14px; color: #888;">/${maxDailyLimit}</span>`;
+            document.getElementById('remainingStat').textContent = remaining;
+            document.getElementById('remainingCount').textContent = remaining;
+            document.getElementById('usageProgress').style.width = `${usagePercentage}%`;
+            
+            // Update count input max value
+            const countInput = document.getElementById('count');
+            countInput.max = Math.min(100, remaining);
+            
+            // Show warning if limit is reached
+            if (remaining <= 0) {
+                document.getElementById('submitBtn').disabled = true;
+                document.getElementById('limitWarning').style.display = 'block';
+            } else {
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('limitWarning').style.display = 'none';
+            }
+            
+        } catch (error) {
+            console.error('Gagal mengambil data statistik:', error);
+        }
+    }
+    
+    // Countdown timer ke midnight
+    function updateResetTimer() {
+        const now = new Date();
+        const midnight = new Date();
+        midnight.setHours(24, 0, 0, 0);
+        
+        const diff = midnight - now;
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        const timerElement = document.getElementById('resetTimer');
+        if (timerElement) {
+            timerElement.textContent = 
+                String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0');
+        }
+    }
+    
+    // Welcome modal functions
+    function checkWelcomeModal() {
+        const dontShow = localStorage.getItem('nglSpamWelcomeSeen');
+        if (!dontShow) {
+            document.getElementById('welcomeModal').style.display = 'flex';
+        }
+    }
+
+    function closeWelcomeModal() {
+        const dontShowAgain = document.getElementById('dontShowAgain').checked;
+        if (dontShowAgain) {
+            localStorage.setItem('nglSpamWelcomeSeen', 'true');
+        }
+        document.getElementById('welcomeModal').style.display = 'none';
+    }
+    
+    // Check if logo image loads successfully
+    function checkLogo() {
+        const logos = [
+            document.getElementById('sidebarLogo'),
+            document.getElementById('mainLogo')
+        ];
+        
+        logos.forEach(logo => {
+            if (!logo) return;
+            
+            const img = new Image();
+            img.src = 'https://files.catbox.moe/t5fw19.jpg';
+            
+            img.onload = function() {
+                logo.style.backgroundImage = `url('${img.src}')`;
+            };
+            
+            img.onerror = function() {
+                logo.classList.add('failed');
+            };
+        });
+    }
+    
+document.getElementById('nglForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const target = document.getElementById('target').value.trim();
+    const message = document.getElementById('message').value.trim();
+    const count = parseInt(document.getElementById('count').value);
+    
+    const submitBtn = document.getElementById('submitBtn');
+    const logs = document.getElementById('logs');
+    const stats = document.getElementById('stats');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    
+    // Validasi
+    if (!target || !message) {
+        logs.innerHTML = '<div class="log-error">❌ Semua field harus diisi!</div>';
+        return;
+    }
+    
+    if (count < 1 || count > 100) {
+        logs.innerHTML = '<div class="log-error">❌ Jumlah pesan harus antara 1-100!</div>';
+        return;
+    }
+    
+    // Reset UI
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    submitBtn.disabled = true;
+    logs.innerHTML = '<div class="log-info">🚀 Memulai spam NGL...</div>';
+    stats.style.display = 'flex';
+    progressBar.style.display = 'block';
+    progressFill.style.width = '0%';
+    document.getElementById('successCount').textContent = '0';
+    document.getElementById('errorCount').textContent = '0';
+    document.getElementById('progress').textContent = '0%';
+    
+    try {
+        // Kirim request ke API
+        const response = await fetch('/api/ngl-spam-js', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                target: target,
+                message: message,
+                count: count
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Terjadi kesalahan');
+        }
+        
+        // Tampilkan logs dari hasil API
+        logs.innerHTML = '';
+        result.logs.forEach(log => {
+            const logElement = document.createElement('div');
+            
+            if (log.includes('✅')) {
+                logElement.className = 'log-success';
+            } else if (log.includes('❌')) {
+                logElement.className = 'log-error';
+            } else if (log.includes('⚠️')) {
+                logElement.className = 'log-warning';
+            } else {
+                logElement.className = 'log-info';
+            }
+            
+            logElement.textContent = log;
+            logs.appendChild(logElement);
+        });
+        
+        // Update stats
+        document.getElementById('successCount').textContent = result.success;
+        document.getElementById('errorCount').textContent = result.errors;
+        document.getElementById('progress').textContent = '100%';
+        progressFill.style.width = '100%';
+        
+        // Update usage stats setelah berhasil
+        await updateUsageStats();
+        
+        // Scroll ke bottom logs
+        logs.scrollTop = logs.scrollHeight;
+        
+    } catch (error) {
+        const errorElement = document.createElement('div');
+        errorElement.className = 'log-error';
+        errorElement.textContent = '❌ Error: ' + error.message;
+        logs.appendChild(errorElement);
+    } finally {
+        submitBtn.innerHTML = '<i class="fas fa-rocket"></i> Mulai Spam';
+        submitBtn.disabled = false;
+    }
+});
+    
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        loadUserData();
+        updateResetTimer();
+        checkWelcomeModal();
+        checkLogo();
+        
+        // Update timer every second
+        setInterval(updateResetTimer, 1000);
+        
+        // Auto-update usage stats setiap 30 detik
+        setInterval(updateUsageStats, 30000);
+        
+        // Update stats ketika halaman difocus kembali
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateUsageStats();
+            }
+        });
+        
+        // Close sidebar when clicking on a link (for mobile)
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth < 1024) {
+                    toggleSidebar();
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

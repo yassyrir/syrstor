@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Generator - Twice</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#000000; --card:#1a1a1a;
+      --text:#ffffff; --muted:#888888;
+      --primary:#ff0000; --secondary:#AD4AE7;
+      --accent:#666666;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    body {
+      background:radial-gradient(circle at 20% 20%,rgba(255,255,255,.1),transparent 30%),
+                 radial-gradient(circle at 80% 10%,rgba(255,255,255,.08),transparent 25%),
+                 radial-gradient(circle at 50% 90%,rgba(255,255,255,.05),transparent 30%),
+                 var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* Menu Toggle Button */
+    .menu-toggle {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: var(--text);
+      width: 45px;
+      height: 45px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 1001;
+      backdrop-filter: blur(12px);
+      transition: all 0.3s ease;
+    }
+    
+    .menu-toggle:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: scale(1.05);
+    }
+    
+    .menu-toggle i {
+      font-size: 20px;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      width: 270px;
+      background: rgba(26,26,26,0.95);
+      backdrop-filter: blur(12px);
+      border-right: 1px solid rgba(255,255,255,0.15);
+      padding: 25px 20px;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 1000;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+    }
+    
+    .sidebar.active {
+      transform: translateX(0);
+    }
+    
+    /* Overlay ketika sidebar aktif */
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 999;
+      display: none;
+      backdrop-filter: blur(3px);
+    }
+    
+    .sidebar-overlay.active {
+      display: block;
+    }
+
+    /* Sidebar Header - Untuk mengatur logo dan judul */
+    .sidebar-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    /* Efek Instagram Story pada Logo */
+    .logo-container {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: conic-gradient(
+        #ffffff 0%, 
+        #ff0000 30%, 
+        #AD4AE7 60%, 
+        #ffffff 100%
+      );
+      animation: rotate 3s linear infinite;
+      padding: 4px;
+    }
+
+    .logo {
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      z-index: 1;
+      position: relative;
+      background: #1a1a1a;
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+
+    @keyframes rotate {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    
+    .app-title{
+      font-family:'Orbitron',sans-serif;
+      font-size: 22px;
+      font-weight:800;
+      color:#fff;
+      text-align:center;
+      text-shadow:0 0 12px rgba(255,255,255,0.5);
+      margin-bottom: 8px;
+    }
+    
+    /* Gradien Border untuk Execution Mode */
+    .access-info{
+      font-size: 12px;
+      text-align:center;
+      color:#fff;
+      background:rgba(255,255,255,0.1);
+      padding: 8px 14px;
+      border-radius:10px;
+      margin-top: 5px;
+      position: relative;
+      z-index: 1;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .access-info::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, 
+        #ffffff 0%, 
+        #ff0000 30%, 
+        #AD4AE7 60%, 
+        #ffffff 100%);
+      border-radius: 12px;
+      z-index: -1;
+      animation: borderGlow 3s linear infinite;
+      background-size: 400% 400%;
+    }
+    
+    @keyframes borderGlow {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+    
+    .nav-menu{
+      list-style:none;
+      margin-top:25px;
+    }
+    
+    .nav-item {
+      margin-bottom: 8px;
+    }
+    
+    .nav-link{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:14px 16px;
+      color:var(--text);
+      text-decoration:none;
+      border-radius:12px;
+      font-size:14px;
+      transition:.3s;
+      font-weight:500;
+    }
+    
+    .nav-link:hover,
+    .nav-link.active{
+      background:linear-gradient(90deg,rgba(255,255,255,0.15),rgba(255,255,255,0.08));
+      border-left:4px solid var(--secondary);
+      transform:translateX(5px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    /* Main Content */
+    .main-content{
+      flex:1;
+      padding: 20px 35px 35px;
+      transition: margin-left 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .main-logo-container {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .main-logo-ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: conic-gradient(
+        #ffffff 0%, 
+        #ff0000 30%, 
+        #AD4AE7 60%, 
+        #ffffff 100%
+      );
+      animation: rotate 3s linear infinite;
+      padding: 4px;
+    }
+    
+    .main-logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      z-index: 1;
+      position: relative;
+      background: #1a1a1a;
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+    
+    .main-app-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 0 12px rgba(255,255,255,0.5);
+    }
+    
+    .main-access-info {
+      font-size: 12px;
+      text-align: center;
+      color: #fff;
+      background: rgba(255,255,255,0.1);
+      padding: 8px 14px;
+      border-radius: 10px;
+      margin-top: 5px;
+      position: relative;
+      z-index: 1;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .main-access-info::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, 
+        #ffffff 0%, 
+        #ff0000 30%, 
+        #AD4AE7 60%, 
+        #ffffff 100%);
+      border-radius: 12px;
+      z-index: -1;
+      animation: borderGlow 3s linear infinite;
+      background-size: 400% 400%;
+    }
+    
+    /* Main Container */
+    .container {
+      background: rgba(26, 26, 26, 0.95);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      max-width: 450px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      animation: fadeIn 0.8s ease;
+      margin-bottom: 30px;
+    }
+    
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      border-radius: 18px 18px 0 0;
+    }
+    
+    .section-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-shadow: 0 0 15px rgba(255,255,255,0.3);
+    }
+    
+    .section-title i {
+      color: var(--primary);
+      font-size: 24px;
+    }
+    
+    /* Input Styling */
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    
+    .label {
+      color: #ff0000;
+      font-size: 16px;
+      margin-bottom: 8px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+    }
+    
+    .label i {
+      margin-right: 8px;
+    }
+    
+    .input-box {
+      width: 100%;
+      padding: 14px 18px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      border-radius: 12px;
+      outline: none;
+      transition: all 0.3s;
+      font-size: 15px;
+    }
+    
+    .input-box:focus {
+      border-color: var(--secondary);
+      box-shadow: 0 0 15px var(--primary);
+      transform: translateY(-2px);
+    }
+    
+    .input-box::placeholder {
+      color: #aaa;
+    }
+    
+    /* Button Styling */
+    .action-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: all 0.3s;
+      box-shadow: 0 5px 15px rgba(123, 92, 245, 0.4);
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .action-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(123, 92, 245, 0.6);
+    }
+    
+    .action-btn:active {
+      transform: translateY(1px);
+    }
+    
+    /* QR Code Styling */
+    .qrcode-container {
+      margin-top: 25px;
+      text-align: center;
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    #qrcode {
+      padding: 20px;
+      background: white;
+      border-radius: 15px;
+      display: inline-block;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    
+    #qrcode canvas {
+      border-radius: 10px;
+    }
+    
+    .download-btn {
+      display: none;
+      margin-top: 20px;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #AD4AE7, #8a2be2);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .download-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(138, 43, 226, 0.6);
+    }
+    
+    /* Footer */
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    
+    /* Information Section */
+    .info-section {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 18px;
+      padding: 28px;
+      margin-bottom: 30px;
+      position: relative;
+      overflow: hidden;
+      max-width: 800px;
+      width: 100%;
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .info-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--secondary), var(--primary));
+      border-radius: 18px 18px 0 0;
+    }
+
+    .info-content {
+      line-height: 1.6;
+    }
+
+    .info-content h3 {
+      color: #FF0000;
+      margin-bottom: 15px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .info-content p {
+      margin-bottom: 15px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .info-content ul {
+      margin-left: 20px;
+      margin-bottom: 15px;
+    }
+
+    .info-content li {
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .info-content .highlight {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .warning-box {
+      background: rgba(255, 0, 0, 0.1);
+      border-left: 4px solid var(--primary);
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .warning-box p {
+      margin: 0;
+      color: #ff9999;
+      font-size: 14px;
+    }
+
+    .note-box {
+      background: rgba(173, 74, 231, 0.1);
+      border-left: 4px solid #FFF900;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .note-box p {
+      margin: 0;
+      color: #F9F444;
+      font-size: 14px;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fadeInUp {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Responsive */
+    @media (min-width: 1024px) {
+      .sidebar {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 270px;
+      }
+      .menu-toggle {
+        display: none;
+      }
+    }
+    
+    @media (max-width: 1023px) {
+      .main-content {
+        margin-left: 0;
+        padding: 15px 20px 35px;
+      }
+      .main-app-title {
+        font-size: 24px;
+      }
+      .section-title {
+        font-size: 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 20px;
+      }
+      .info-section {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Menu Toggle Button -->
+  <div class="menu-toggle" id="menuToggle">
+    <i class="fas fa-bars"></i>
+  </div>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <!-- MODIFIKASI: Logo dengan efek Instagram Story -->
+      <div class="logo-container">
+        <div class="logo-ring"></div>
+        <img src="https://files.catbox.moe/t5fw19.jpg" class="logo" alt="DictiveCore Logo">
+      </div>
+      <div class="app-title">Twice</div>
+      <div class="access-info"><b><i>QR Generator</i></b></div>
+    </div>
+    
+    <ul class="nav-menu">
+      <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-tachometer-alt"></i>Dashboard</a></li>
+      <li class="nav-item"><a href="/profile" class="nav-link"><i class="fas fa-user"></i>Profile</a></li>
+      <li class="nav-item"><a href="https://te.me/sennmods1" class="nav-link"><i class="fab fa-telegram"></i>Telegram</a></li>
+      <li class="nav-item"><a href="https://wa.me/6287730232643" class="nav-link"><i class="fab fa-whatsapp"></i>WhatsApp</a></li>
+      <li class="nav-item"><a href="/chat-ai" class="nav-link"><i class="fas fa-robot"></i>Chat AI</a></li>
+      <li class="nav-item"><a href="/execution" class="nav-link"><i class="fas fa-bolt"></i>Execution</a></li>
+      <li class="nav-item"><a href="/qr-generator" class="nav-link active"><i class="fas fa-qrcode"></i>QR Generator</a></li>
+      <li class="nav-item"><a href="/tiktok" class="nav-link"><i class="fab fa-tiktok"></i>TikTok Downloader</a></li>
+      <li class="nav-item"><a href="/quoteip" class="nav-link"><i class="fas fa-mobile-alt"></i>iPhone Quote</a></li>
+      <li class="nav-item"><a href="/ngl-spam/guide" class="nav-link"><i class="fas fa-message"></i>Spam NGL</a></li>
+      <li class="nav-item"><a href="/logout" class="nav-link"><i class="fas fa-sign-out-alt"></i>Logout</a></li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <div class="header">
+      <div class="main-logo-container">
+        <div class="main-logo-ring"></div>
+        <img src="https://files.catbox.moe/t5fw19.jpg" class="main-logo" alt="DictiveCore Logo">
+      </div>
+      <div>
+        <div class="main-app-title">Twice</div>
+        <div class="main-access-info"><b>Tools QR Generator</b></div>
+      </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+      <h2 class="section-title">
+        <i class="fas fa-qrcode"></i>
+        QR Code Generator
+      </h2>
+      
+      <div class="input-group">
+        <div class="label">
+          <i class="fas fa-link"></i> Masukkan Teks atau URL
+        </div>
+        <input type="text" class="input-box" id="text" placeholder="https://example.com atau teks lainnya...">
+      </div>
+      
+      <button class="action-btn" onclick="generateQR()">
+        <i class="fas fa-bolt"></i> Generate QR Code
+      </button>
+      
+      <div class="qrcode-container" id="qrcodeContainer">
+        <div id="qrcode"></div>
+        <button class="download-btn" id="downloadBtn" onclick="downloadQR()">
+          <i class="fas fa-download"></i> Download QR Code
+        </button>
+      </div>
+    </div>
+    
+    <!-- Information Section -->
+    <div class="info-section">
+      <h2 class="section-title">
+        <i class="fas fa-info-circle"></i>
+        Panduan Penggunaan
+      </h2>
+      <div class="info-content">
+        <h3>𝘾𝙖𝙧𝙖 𝙈𝙚𝙣𝙜𝙜𝙪𝙣𝙖𝙠𝙖𝙣 𝙌𝙍 𝘾𝙤𝙙𝙚 𝙂𝙚𝙣𝙚𝙧𝙖𝙩𝙤𝙧</h3>
+        <p>Panel ini memungkinkan Anda untuk membuat QR Code dengan mudah. Berikut adalah panduan lengkapnya:</p>
+        
+        <ul>
+          <li><span class="highlight">Masukkan Teks atau URL</span>: Ketik atau tempel teks atau URL yang ingin Anda ubah menjadi QR Code.</li>
+          <li><span class="highlight">Generate QR Code</span>: Klik tombol "Generate QR Code" untuk membuat QR Code.</li>
+          <li><span class="highlight">Download QR Code</span>: Setelah QR Code muncul, klik tombol "Download QR Code" untuk menyimpan gambar QR Code.</li>
+          <li><span class="highlight">Gunakan QR Code</span>: QR Code yang telah didownload dapat digunakan untuk berbagai keperluan seperti berbagi link, informasi kontak, atau teks lainnya.</li>
+        </ul>
+        
+        <div class="note-box">
+          <p><i class="fas fa-lightbulb"></i> <strong>Tips:</strong> QR Code dapat digunakan untuk berbagai keperluan seperti berbagi link, informasi kontak, atau teks lainnya. QR Code yang dibuat dapat dipindai oleh siapa saja menggunakan aplikasi pemindai QR Code di smartphone.</p>
+        </div>
+
+        <div class="warning-box">
+          <p><i class="fas fa-exclamation-triangle"></i> <strong>Perhatian:</strong> Jangan masukkan informasi sensitif atau rahasia ke dalam QR Code karena QR Code yang dibuat dapat dipindai oleh siapa saja.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer">
+      © 2025 - Twice by Senn. All rights reserved.
+    </div>
+  </div>
+
+<script>
+  let qrInstance;
+
+  // Menu toggle functionality
+  const menuToggle = document.getElementById('menuToggle');
+  const sidebar = document.getElementById('sidebar');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+  
+  function toggleSidebar() {
+    sidebar.classList.toggle('active');
+    sidebarOverlay.classList.toggle('active');
+  }
+  
+  menuToggle.addEventListener('click', toggleSidebar);
+  sidebarOverlay.addEventListener('click', toggleSidebar);
+
+  function generateQR() {
+    const text = document.getElementById("text").value.trim();
+    const qrContainer = document.getElementById("qrcode");
+    const qrCodeContainer = document.getElementById("qrcodeContainer");
+    const downloadBtn = document.getElementById("downloadBtn");
+
+    // Reset state
+    qrContainer.innerHTML = "";
+    qrCodeContainer.style.display = "none";
+    downloadBtn.style.display = "none";
+
+    if (!text) {
+      alert("⚠️ Masukkan dulu teks atau link!");
+      return;
+    }
+
+    // Hapus QR code sebelumnya jika ada
+    if (qrInstance) {
+      qrInstance.clear();
+    }
+
+    // Buat QR code baru
+    qrInstance = new QRCode(qrContainer, {
+      text: text,
+      width: 200,
+      height: 200,
+      colorDark: "#000000",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H
+    });
+
+    // Tampilkan container dan tombol download
+    setTimeout(() => {
+      qrCodeContainer.style.display = "block";
+      downloadBtn.style.display = "block";
+    }, 500);
+  }
+
+  function downloadQR() {
+    const canvas = document.querySelector("#qrcode canvas");
+    if (!canvas) {
+      alert("⚠️ Generate dulu QR-nya!");
+      return;
+    }
+
+    // Animasi klik tombol
+    const downloadBtn = document.getElementById("downloadBtn");
+    downloadBtn.style.transform = "scale(0.95)";
+    setTimeout(() => {
+      downloadBtn.style.transform = "scale(1)";
+    }, 150);
+
+    // Buat canvas baru dengan padding dan watermark
+    const padding = 40;
+    const newCanvas = document.createElement("canvas");
+    const ctx = newCanvas.getContext("2d");
+    
+    newCanvas.width = canvas.width + (padding * 2);
+    newCanvas.height = canvas.height + (padding * 2) + 30; // Extra space for watermark
+    
+    // Background putih
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, newCanvas.width, newCanvas.height);
+    
+    // Gambar QR di tengah dengan padding
+    ctx.drawImage(canvas, padding, padding);
+    
+    // Tambahkan watermark
+    ctx.font = "bold 14px Arial";
+    ctx.fillStyle = "#333333";
+    ctx.textAlign = "center";
+    ctx.fillText("by Senn", newCanvas.width/2, newCanvas.height - 10);
+    
+    // Download
+    const link = document.createElement("a");
+    link.href = newCanvas.toDataURL("image/png");
+    link.download = "QR_Code_DictiveCore.png";
+    link.click();
+  }
+
+  // Event listener untuk tombol Enter
+  document.getElementById("text").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+      generateQR();
+    }
+  });
+
+  // Auto-focus pada input saat halaman dimuat
+  window.onload = function() {
+    document.getElementById("text").focus();
+    
+    // Close sidebar when clicking on a link (for mobile)
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', function() {
+        if (window.innerWidth < 1024) {
+          toggleSidebar();
+        }
+      });
+    });
+  };
+</script>
+</body>
+</html>
